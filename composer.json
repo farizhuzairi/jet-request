@@ -1,0 +1,41 @@
+{
+    "name": "farizhuzairi/jet-request",
+    "type": "library",
+    "description": "Http Request.",
+    "keywords": [
+        "jet request",
+        "client service",
+        "http request"
+    ],
+    "license": "MIT",
+    "support": {
+        "issues": "https://github.com/farizhuzairi/jet-request/issues",
+        "source": "https://github.com/farizhuzairi/jet-request"
+    },
+    "authors": [
+        {
+            "name": "Fariz Huzairi",
+            "email": "farizhuzairi@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.2"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^9.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "Jet\\Request": ""
+        }
+    },
+    
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Jet\\Response\\Client\\JetRequestServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable"
+}
