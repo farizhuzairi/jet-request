@@ -2,7 +2,7 @@
 
 namespace Jet\Request;
 
-use Jet\Request\Client\RequestService;
+use Jet\Request\RequestService;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 
