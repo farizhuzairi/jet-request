@@ -1,6 +1,6 @@
 <?php
 
-namespace Jet\Request\Client;
+namespace Jet\Request;
 
 abstract class RequestService
 {

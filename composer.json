@@ -26,14 +26,14 @@
     },
     "autoload": {
         "psr-4": {
-            "Jet\\Request": ""
+            "Jet\\Request\\": ""
         }
     },
     
     "extra": {
         "laravel": {
             "providers": [
-                "Jet\\Response\\Client\\JetRequestServiceProvider"
+                "Jet\\Request\\Client\\JetRequestServiceProvider"
             ]
         }
     },
