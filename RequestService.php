@@ -2,6 +2,8 @@
 
 namespace Jet\Request;
 
+use Illuminate\Http\Client\Response;
+
 abstract class RequestService
 {
     use
@@ -14,8 +16,8 @@ abstract class RequestService
      * ---
      */
     public function __construct(
-        protected string $method,
         protected array|string $data,
+        protected string $method,
         protected string $accept
     )
     {}
@@ -36,5 +38,18 @@ abstract class RequestService
     {
         $this->accept = $accept;
         return $this;
+    }
+
+    /**
+     * Send Request
+     * 
+     */
+    public function send(): Response
+    {
+        if(! $this->httpRequest instanceof Response) {
+            throw new \Exception("Error Processing Request: Invalid data object request.");
+        }
+
+        return $this->httpRequest;
     }
 }

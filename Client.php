@@ -9,25 +9,31 @@ use Illuminate\Support\Facades\Http;
 class Client extends RequestService
 {
     /**
+     * Client Request Object
+     * 
+     */
+    protected Response $httpRequest;
+
+    /**
      * Client Request Construction
      * ---
      */
     public function __construct(
-        string $method = 'post',
-        array|string $data = [],
-        string $accept = "application/json"
+        array|string $data,
+        string $method,
+        string $accept
     )
     {
-        parent::__construct(method: $method, data: $data, accept: $accept);
+        parent::__construct(data: $data, method: $method, accept: $accept);
     }
 
     /**
      * Create New Request
      * 
      */
-    public function api(): Response
+    public function api(): static
     {
-        return Http::accept($this->accept)
+        $this->httpRequest = Http::accept($this->accept)
         ->withToken('token_xxx')
         ->withHeaders([
             'User-Agent' => 'EMS/1.0.0 Base/06846.347 ' . config('app.name'),
@@ -47,7 +53,20 @@ class Client extends RequestService
         ->post('{+url}/{endpoint}/{version}/{+topic}', [
             'name' => 'Sara',
             'role' => 'Privacy Consultant',
-        ])
-        ;
+        ]);
+
+        return $this;
+    }
+
+    /**
+     * Create New Request Static
+     * 
+     */
+    public static function request(array|string $data = [], string $method = 'post', string $accept = "application/json"): static
+    {
+        $object = new self($data, $method, $accept);
+        $object->api();
+        
+        return $this;
     }
 }
