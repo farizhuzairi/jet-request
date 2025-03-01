@@ -2,18 +2,14 @@
 
 namespace Jet\Request;
 
+use Closure;
 use Jet\Request\RequestService;
+use Illuminate\Support\Collection;
 use Illuminate\Http\Client\Response;
-use Illuminate\Support\Facades\Http;
+use Jet\Request\Client\Contracts\Requestionable;
 
-class Client extends RequestService
+class Client extends RequestService implements Requestionable
 {
-    /**
-     * Client Request Object
-     * 
-     */
-    protected Response $httpRequest;
-
     /**
      * Client Request Construction
      * ---
@@ -28,45 +24,31 @@ class Client extends RequestService
     }
 
     /**
-     * Create New Request
-     * 
-     */
-    public function api(): static
-    {
-        $this->httpRequest = Http::accept($this->accept)
-        ->withToken('token_xxx')
-        ->withHeaders([
-            'User-Agent' => 'EMS/1.0.0 Base/06846.347 ' . config('app.name'),
-            'App-ID' => '123',
-            'Request-ID' => '123',
-            'Userable-Key' => '123',
-            'License-Key' => '123',
-            'Visit' => '123',
-        ])
-        ->retry(3, 1000, throw: false)
-        ->withUrlParameters([
-            'url' => 'http://haschanetwork.local',
-            'endpoint' => 'ems',
-            'version' => '1',
-            'topic' => 'ping/test',
-        ])
-        ->post('{+url}/{endpoint}/{version}/{+topic}', [
-            'name' => 'Sara',
-            'role' => 'Privacy Consultant',
-        ]);
-
-        return $this;
-    }
-
-    /**
      * Create New Request Static
      * 
      */
-    public static function request(array|string $data = [], string $method = 'post', string $accept = "application/json"): static
+    public static function request(
+        array|string $data = [],
+        Closure|string|null $method = null,
+        Closure|string|null $accept = null,
+        ?Closure $closure = null
+    ): Response|Collection|array
     {
-        $object = new self($data, $method, $accept);
-        $object->api();
+        if($method instanceof Closure || empty($method)) {
+            $closure = $method;
+            $method = static::$_METHOD;
+        }
+
+        if($accept instanceof Closure || empty($accept)) {
+            $closure = $accept;
+            $accept = static::$_ACCEPT;
+        }
         
-        return $this;
+        $object = new self($data, $method, $accept);
+        if(! empty($closure)) $closure($object);
+        dd($closure);
+        $object->api();
+
+        return $object->send();
     }
 }

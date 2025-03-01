@@ -3,9 +3,29 @@
 namespace Jet\Request;
 
 use Illuminate\Http\Client\Response;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Client\PendingRequest;
 
 abstract class RequestService
 {
+    /**
+     * Client Request Object
+     * 
+     */
+    protected static PendingRequest|Response $response;
+
+    /**
+     * Default Http Method
+     * 
+     */
+    protected static string $_METHOD = "post";
+
+    /**
+     * Default Http Accept
+     * 
+     */
+    protected static string $_ACCEPT = "application/json";
+    
     use
     \Jet\Request\Client\Traits\Hostable,
     \Jet\Request\Client\Traits\Keyable,
@@ -20,21 +40,36 @@ abstract class RequestService
         protected string $method,
         protected string $accept
     )
-    {}
+    {
+        $this->setHeader();
+        if(! isset(static::$response)) $this->api();
+    }
 
+    /**
+     * Set Http Method
+     * 
+     */
     public function method(string $method): static
     {
         $this->method = $method;
         return $this;
     }
 
+    /**
+     * Set Data Form
+     * 
+     */
     public function data(array|string $data): static
     {
         $this->data = $data;
         return $this;
     }
 
-    protected function accept(string $accept): static
+    /**
+     * Set Accept
+     * 
+     */
+    public function accept(string $accept): static
     {
         $this->accept = $accept;
         return $this;
@@ -46,10 +81,42 @@ abstract class RequestService
      */
     public function send(): Response
     {
-        if(! $this->httpRequest instanceof Response) {
+        if(! static::$response instanceof Response) {
             throw new \Exception("Error Processing Request: Invalid data object request.");
         }
 
-        return $this->httpRequest;
+        return static::$response;
+    }
+
+    /**
+     * Create New Request
+     * From client
+     * 
+     */
+    public function api(): static
+    {
+        $request = Http::accept($this->accept);
+
+        // with token
+        if($this->hasToken()) {
+            $request->withToken($this->getToken());
+        }
+        
+        $request->withHeaders($this->getHeader())
+        ->retry(3, 1000, throw: false);
+
+        static::$response = $request->withUrlParameters([
+            'url' => 'http://haschanetwork.local',
+            'endpoint' => 'ems',
+            'version' => '1',
+            'topic' => 'ping/test',
+        ])
+        ->post('{+url}/{endpoint}/{version}/{+topic}', [
+            'name' => 'Sara',
+            'role' => 'Privacy Consultant',
+        ]);
+
+        // static::$response = $request;
+        return $this;
     }
 }
