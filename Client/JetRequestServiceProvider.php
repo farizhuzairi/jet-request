@@ -9,7 +9,9 @@ class JetRequestServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        $this->mergeConfigFrom(
+            __DIR__.'/../config/jet-request.php', 'jet-request'
+        );
     }
     
     public function boot(): void

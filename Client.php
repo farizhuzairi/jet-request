@@ -16,8 +16,8 @@ class Client extends RequestService implements Requestionable
      */
     public function __construct(
         array|string $data,
-        string $method,
-        string $accept
+        ?string $method,
+        ?string $accept
     )
     {
         parent::__construct(data: $data, method: $method, accept: $accept);
@@ -34,19 +34,19 @@ class Client extends RequestService implements Requestionable
         ?Closure $closure = null
     ): Response|Collection|array
     {
-        if($method instanceof Closure || empty($method)) {
+        if($method instanceof Closure) {
             $closure = $method;
-            $method = static::$_METHOD;
+            $method = null;
         }
 
-        if($accept instanceof Closure || empty($accept)) {
+        if($accept instanceof Closure) {
             $closure = $accept;
-            $accept = static::$_ACCEPT;
+            $accept = null;
         }
         
         $object = new self($data, $method, $accept);
         if(! empty($closure)) $closure($object);
-        dd($closure);
+        // dd($closure);
         $object->api();
 
         return $object->send();

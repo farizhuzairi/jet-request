@@ -2,9 +2,12 @@
 
 namespace Jet\Request;
 
+use Closure;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Client\RequestException;
 
 abstract class RequestService
 {
@@ -37,38 +40,41 @@ abstract class RequestService
      */
     public function __construct(
         protected array|string $data,
-        protected string $method,
-        protected string $accept
+        protected ?string $method,
+        protected ?string $accept
     )
     {
-        $this->setHeader();
+        $this->defaultHeader();
+        $this->defaultHostable();
+
+        if(empty($method)) $this->method = static::$_METHOD;
+        if(empty($accept)) $this->accept = static::$_ACCEPT;
+
         if(! isset(static::$response)) $this->api();
     }
 
-    /**
-     * Set Http Method
-     * 
-     */
-    public function method(string $method): static
-    {
-        $this->method = $method;
-        return $this;
-    }
-
-    /**
-     * Set Data Form
-     * 
-     */
     public function data(array|string $data): static
     {
         $this->data = $data;
         return $this;
     }
 
-    /**
-     * Set Accept
-     * 
-     */
+    protected function getData(): array
+    {
+        return $this->data;
+    }
+
+    public function method(string $method): static
+    {
+        $this->method = $method;
+        return $this;
+    }
+
+    protected function getMethod(): string
+    {
+        return $this->method;
+    }
+
     public function accept(string $accept): static
     {
         $this->accept = $accept;
@@ -76,16 +82,25 @@ abstract class RequestService
     }
 
     /**
-     * Send Request
+     * Create Data Request
      * 
      */
-    public function send(): Response
+    protected function dataProcess(PendingRequest $request, string $method, string $url, array $data): Response
     {
-        if(! static::$response instanceof Response) {
-            throw new \Exception("Error Processing Request: Invalid data object request.");
+        $result = null;
+
+        try {
+
+            if($method === 'post') {
+                $result = $request->post($url, $data);
+            }
+
+        } catch (RequestException $e) {
+            report($e->getMessage());
+            $result = $this->invalidResponse();
         }
 
-        return static::$response;
+        return $result;
     }
 
     /**
@@ -105,18 +120,35 @@ abstract class RequestService
         $request->withHeaders($this->getHeader())
         ->retry(3, 1000, throw: false);
 
-        static::$response = $request->withUrlParameters([
-            'url' => 'http://haschanetwork.local',
-            'endpoint' => 'ems',
-            'version' => '1',
-            'topic' => 'ping/test',
-        ])
-        ->post('{+url}/{endpoint}/{version}/{+topic}', [
-            'name' => 'Sara',
-            'role' => 'Privacy Consultant',
-        ]);
-
-        // static::$response = $request;
+        static::$response = $this->dataProcess($request, $this->getMethod(), $this->getUrl(), $this->getData());
         return $this;
+    }
+
+    /**
+     * Send Request
+     * 
+     */
+    public function send(): Response
+    {
+        if(! static::$response instanceof Response) {
+            throw new \Exception("Error Processing Request: Invalid data object request.");
+        }
+
+        return static::$response;
+    }
+
+    /**
+     * Manual Response
+     * 
+     */
+    protected function invalidResponse(): Response|JsonResponse
+    {
+        return response()->json([
+            'successful' => false,
+            'statusCode' => 500,
+            'message' => "There was a problem with the internal server.",
+            'results' => []
+        ])
+        ->setStatusCode(500);
     }
 }
