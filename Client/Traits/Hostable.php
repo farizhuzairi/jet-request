@@ -86,6 +86,15 @@ trait Hostable
      */
     protected static $_VERSION;
 
+    protected function setDefaultWithStaticVar(?string $str, string $staticVar): ?string
+    {
+        if(! empty($str) && property_exists($this, $staticVar)) {
+            static::${$staticVar} = $str;
+        }
+
+        return $str;
+    }
+
     protected function getStrWithPrefix(?string $str, string $prefix = "/"): ?string
     {
         if(! empty($str)) {
@@ -108,10 +117,10 @@ trait Hostable
             
             try {
                 $api = $config['api'];
-                static::$_HTTP = $api['http'];
-                static::$_HOST = $api['host'];
-                static::$_ENDPOINT = $api['endpoint'];
-                static::$_VERSION = $api['version'];
+                static::$http = $this->setDefaultWithStaticVar($api['http'], '_HTTP');
+                static::$host = $this->setDefaultWithStaticVar($api['host'], '_HOST');
+                static::$endpoint = $this->setDefaultWithStaticVar($api['endpoint'], '_ENDPOINT');
+                static::$version = $this->setDefaultWithStaticVar($api['version'], '_VERSION');
             } catch (RequestException $e) {
                 Log::error("Jet Request Config invalid: {$e->getMessage()}");
             }
@@ -135,11 +144,7 @@ trait Hostable
 
     protected function getHttpHost(): string
     {
-        $url = "";
-        $url .= $this->getStrWithPrefix(static::$http);
-        $url .= $this->getStrWithPrefix(static::$host);
-
-        return $url;
+        return static::$http . static::$host;
     }
 
     public function endpoint(string $endpoint): static
@@ -175,9 +180,15 @@ trait Hostable
         return $this->getStrWithPrefix(static::$topics) ?? "";
     }
 
-    public function url(string $url): static
+    public function url(string $url, bool $isNewUrl = false): static
     {
-        $this->url = $url;
+        if($isNewUrl) {
+            $this->url = $url;
+        }
+        else {
+            $this->url .= "/" .$url;
+        }
+        
         return $this;
     }
 
@@ -189,7 +200,6 @@ trait Hostable
             $url .= $this->getEndpoint();
             $url .= $this->getVersion();
             $url .= $this->getTopics();
-            dd($url);
             $this->url = $url;
 
         } else {

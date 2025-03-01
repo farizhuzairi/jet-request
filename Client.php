@@ -46,7 +46,6 @@ class Client extends RequestService implements Requestionable
         
         $object = new self($data, $method, $accept);
         if(! empty($closure)) $closure($object);
-        // dd($closure);
         $object->api();
 
         return $object->send();
