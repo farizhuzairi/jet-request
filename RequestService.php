@@ -91,8 +91,15 @@ abstract class RequestService
 
         try {
 
-            if($method === 'post') {
+            switch($method) {
+                case "get";
+                $result = $request->get($url);
+                break;
+                
+                case "post":
+                default:
                 $result = $request->post($url, $data);
+                break;
             }
 
         } catch (RequestException $e) {
@@ -117,8 +124,8 @@ abstract class RequestService
             $request->withToken($this->getToken());
         }
         
-        $request->withHeaders($this->getHeader())
-        ->retry(3, 1000, throw: false);
+        $request->withHeaders($this->getHeader());
+        // ->retry(3, 1000, throw: false);
 
         static::$response = $this->dataProcess($request, $this->getMethod(), $this->getUrl(), $this->getData());
         return $this;
