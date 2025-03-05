@@ -6,42 +6,26 @@ use Illuminate\Support\Facades\Crypt;
 
 trait Keyable
 {
-    /**
-     * Authorization Bearer
-     * 
-     */
-    protected ?string $token = null;
-
-    /**
-     * Application request standards
-     * 
-     */
+    protected ?string $token;
     protected ?string $appId = null;
 
-    /**
-     * License Key (User Client Key)
-     * 
-     */
-    protected ?string $license = null;
+    public function token(?string $token = null): string
+    {
+        if(! empty($token)) {
+            $this->setToken($token);
+        }
 
-    /**
-     * With Token, set Authorization Bearer
-     * 
-     */
-    public function token(string $token): static
+        return $this->getToken();
+    }
+
+    public function setToken(string $token): void
     {
         if(! empty($token)) {
             $token = "Bearer {$token}";
             $this->token = Crypt::encrypt($token);
         }
-
-        return $this;
     }
 
-    /**
-     * Get Token
-     * 
-     */
     public function getToken(): ?string
     {
         if($this->hasToken()) {
@@ -51,10 +35,6 @@ trait Keyable
         return null;
     }
 
-    /**
-     * Has Token
-     * 
-     */
     public function hasToken(): bool
     {
         if(! empty($this->token)) {
@@ -64,21 +44,22 @@ trait Keyable
         return false;
     }
 
-    /**
-     * Get App ID
-     * 
-     */
-    protected function getAppId(): ?string
+    public function appId(?string $appId): ?string
     {
-        return $this->appId;
+        if(! empty($appId)) {
+            $this->setAppId($appId);
+        }
+
+        return $this->getAppId();
     }
 
-    /**
-     * Get License
-     * 
-     */
-    protected function getLicense(): ?string
+    public function setAppId(?string $appId): void
     {
-        return $this->license;
+        $this->appId = (string) $appId;
+    }
+
+    public function getAppId(): ?string
+    {
+        return $this->appId;
     }
 }

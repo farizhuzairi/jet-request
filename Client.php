@@ -10,12 +10,8 @@ use Jet\Request\Client\Contracts\Requestionable;
 
 class Client extends RequestService implements Requestionable
 {
-    /**
-     * Client Request Construction
-     * ---
-     */
     public function __construct(
-        array|string $data,
+        array $data,
         ?string $method,
         ?string $accept
     )
@@ -23,16 +19,12 @@ class Client extends RequestService implements Requestionable
         parent::__construct(data: $data, method: $method, accept: $accept);
     }
 
-    /**
-     * Create New Request Static
-     * 
-     */
     public static function request(
-        array|string $data = [],
+        array $data = [],
         Closure|string|null $method = null,
         Closure|string|null $accept = null,
         ?Closure $closure = null
-    ): Response|Collection|array
+    ): static
     {
         if($method instanceof Closure) {
             $closure = $method;
@@ -45,9 +37,22 @@ class Client extends RequestService implements Requestionable
         }
         
         $object = new self($data, $method, $accept);
-        if(! empty($closure)) $closure($object);
-        $object->api();
 
-        return $object->send();
+        $object->send($object, function($request) use ($closure) {
+            if($closure instanceof Closure) $closure($request);
+            $request->api();
+        });
+
+        return $object;
+    }
+
+    public function getResponse(): Response
+    {
+        return $this->response();
+    }
+
+    public function getResult(): Collection
+    {
+        return $this->result();
     }
 }

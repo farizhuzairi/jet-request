@@ -4,59 +4,97 @@ namespace Jet\Request;
 
 use Closure;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Collection;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\RequestException;
+use Jet\Request\Client\Contracts\Requestionable;
 
 abstract class RequestService
 {
-    /**
-     * Client Request Object
-     * 
-     */
     protected static PendingRequest|Response $response;
-
-    /**
-     * Default Http Method
-     * 
-     */
     protected static string $_METHOD = "post";
-
-    /**
-     * Default Http Accept
-     * 
-     */
     protected static string $_ACCEPT = "application/json";
     
     use
     \Jet\Request\Client\Traits\Hostable,
-    \Jet\Request\Client\Traits\Keyable,
     \Jet\Request\Client\Traits\UseTracer;
 
-    /**
-     * Construction
-     * ---
-     */
+    protected array $data = [];
+    protected string $method;
+    protected string $accept;
+
     public function __construct(
-        protected array|string $data,
-        protected ?string $method,
-        protected ?string $accept
+        array $data,
+        ?string $method,
+        ?string $accept
     )
     {
-        $this->defaultHeader();
-        $this->defaultHostable();
+        $this->setProperties($data, $method, $accept);
+        $this->setDefaultHeader();
+        $this->setDefaultHostable();
 
-        if(empty($method)) $this->method = static::$_METHOD;
-        if(empty($accept)) $this->accept = static::$_ACCEPT;
+        if(empty($this->method)) $this->method = static::$_METHOD;
+        if(empty($this->accept)) $this->accept = static::$_ACCEPT;
 
         if(! isset(static::$response)) $this->api();
     }
 
-    public function data(array|string $data): static
+    private function setProperties(array $data, ?string $method, ?string $accept): void
     {
-        $this->data = $data;
+        if(! empty($data)) {
+            $this->data = $data;
+        }
+        
+        if(! empty($method)) {
+            $this->method = $method;
+        }
+
+        if(! empty($accept)) {
+            $this->accept = $accept;
+        }
+    }
+
+    protected function invalidResponse(): Response|JsonResponse
+    {
+        return response()->json([
+            'successful' => false,
+            'statusCode' => 500,
+            'message' => "There was a problem with the internal server.",
+            'results' => []
+        ])
+        ->setStatusCode(500);
+    }
+
+    protected function hasResponse(): bool
+    {
+        try {
+            if(static::$response instanceof Response) {
+                return true;
+            }
+            throw new \Exception("Error Processing Request: Invalid data object request.");
+        } catch (RequestException $e) {
+            report($e->getMessage());
+        }
+
+        return false;
+    }
+
+    public function data(array $data = []): static
+    {
+        if(! empty($data)) {
+            $this->setData($data);
+        }
+
         return $this;
+    }
+
+    public function setData(array $data): void
+    {
+        if(! empty($data)) {
+            $this->data = $data;
+        }
     }
 
     protected function getData(): array
@@ -64,10 +102,20 @@ abstract class RequestService
         return $this->data;
     }
 
-    public function method(string $method): static
+    public function method(?string $method = null): static
     {
-        $this->method = $method;
+        if(! empty($method)) {
+            $this->setMethod($method);
+        }
+
         return $this;
+    }
+
+    public function setMethod(string $method): void
+    {
+        if(! empty($method)) {
+            $this->method = $method;
+        }
     }
 
     protected function getMethod(): string
@@ -75,17 +123,28 @@ abstract class RequestService
         return $this->method;
     }
 
-    public function accept(string $accept): static
+    public function accept(?string $accept = null): static
     {
-        $this->accept = $accept;
+        if(! empty($accept)) {
+            $this->setAccept($accept);
+        }
+
         return $this;
     }
 
-    /**
-     * Create Data Request
-     * 
-     */
-    protected function dataProcess(PendingRequest $request, string $method, string $url, array $data): Response
+    public function setAccept(string $accept): void
+    {
+        if(! empty($accept)) {
+            $this->accept = $accept;
+        }
+    }
+
+    protected function getAccept(): string
+    {
+        return $this->accept;
+    }
+
+    final protected function dataProcess(PendingRequest $request, string $method, string $url, array $data): Response
     {
         $result = null;
 
@@ -110,16 +169,10 @@ abstract class RequestService
         return $result;
     }
 
-    /**
-     * Create New Request
-     * From client
-     * 
-     */
-    public function api(): static
+    final public function api(): static
     {
         $request = Http::accept($this->accept);
 
-        // with token
         if($this->hasToken()) {
             $request->withToken($this->getToken());
         }
@@ -131,31 +184,40 @@ abstract class RequestService
         return $this;
     }
 
-    /**
-     * Send Request
-     * 
-     */
-    public function send(): Response
+    final public function send(Requestionable $request, ?Closure $process = null): static
     {
-        if(! static::$response instanceof Response) {
-            throw new \Exception("Error Processing Request: Invalid data object request.");
+        if($process instanceof Closure) {
+            $process($request);
         }
 
+        return $this;
+    }
+
+    final public function response(): Response
+    {
         return static::$response;
     }
 
-    /**
-     * Manual Response
-     * 
-     */
-    protected function invalidResponse(): Response|JsonResponse
+    final public function result(): Collection
     {
-        return response()->json([
-            'successful' => false,
-            'statusCode' => 500,
-            'message' => "There was a problem with the internal server.",
-            'results' => []
-        ])
-        ->setStatusCode(500);
+        $response = $this->response();
+        
+        if(! $response->ok()) return collect([]);
+        return $response->collect();
+    }
+
+    abstract public function getResponse(): Response;
+    abstract public function getResult(): Collection;
+
+    public function __call($name, $arguments)
+    {
+        try {
+            $result = $this->response()->{$name}();
+        } catch (\Throwable $e) {
+            report($e->getMessage());
+            $result = null;
+        }
+
+        return $result;
     }
 }
