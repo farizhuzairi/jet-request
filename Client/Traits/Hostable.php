@@ -226,11 +226,20 @@ trait Hostable
         return $this->url;
     }
 
-    /**
-     * Set Header, add key and value,
-     * or use array with header key
-     */
     public function header(array|string $header, mixed $value = null): static
+    {
+        if(is_array($header)) {
+            $this->setHeader($header);
+        }
+        
+        if(is_string($header) && ! empty($value)) {
+            $this->setHeader($header, $value);
+        }
+
+        return $this;
+    }
+
+    protected function setHeader(array|string $header, mixed $value = null): void
     {
         if(is_array($header)) {
             $this->headers = array_merge($this->headers, $header);
@@ -239,21 +248,6 @@ trait Hostable
         if(is_string($header) && ! empty($value)) {
             $this->headers = array_merge($this->headers, [$header => $value]);
         }
-
-        return $this;
-    }
-
-    /**
-     * Set Header, add key and value as array
-     */
-    public function headers(array $header): static
-    {
-        return $this->header($header);
-    }
-
-    public function getHeaders(): array
-    {
-        return $this->headers;
     }
 
     public function getHeader(?string $key = null): array
@@ -265,6 +259,17 @@ trait Hostable
             $result = $arr;
         }
 
-        return $result;
+        return (array) $result;
+    }
+
+    public function headers(array $header): static
+    {
+        $this->setHeader($header);
+        return $this;
+    }
+
+    public function getHeaders(): array
+    {
+        return $this->getHeader();
     }
 }

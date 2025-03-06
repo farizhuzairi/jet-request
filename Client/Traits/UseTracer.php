@@ -4,17 +4,26 @@ namespace Jet\Request\Client\Traits;
 
 trait UseTracer
 {
-    /**
-     * ID Permintaan yang dienkripsi
-     * 
-     */
-    protected string $requestId;
+    protected ?string $requestId = null;
 
-    /**
-     * Pemenuhan data sebagai catatan permintaan pengguna
-     * yang dienkripsi dalam proses tracer
-     * 
-     * Ini akan berfungsi jika digunakan bersamaan dengan paket Direction Service
-     */
-    protected string $logs;
+    public function requestId(?string $id = null): static
+    {
+        if(! empty($id)) {
+            $this->setRequestId($id);
+        }
+
+        return $this;
+    }
+
+    public function setRequestId(string $id): void
+    {
+        if(! empty($id)) {
+            $this->requestId = $id;
+        }
+    }
+
+    public function getRequestId(): ?string
+    {
+        return $this->requestId;
+    }
 }

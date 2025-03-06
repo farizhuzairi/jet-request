@@ -171,7 +171,7 @@ abstract class RequestService
 
     final public function api(): static
     {
-        $request = Http::accept($this->accept);
+        $request = Http::accept($this->getAccept());
 
         if($this->hasToken()) {
             $request->withToken($this->getToken());

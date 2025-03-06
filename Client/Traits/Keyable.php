@@ -2,12 +2,41 @@
 
 namespace Jet\Request\Client\Traits;
 
+use Closure;
 use Illuminate\Support\Facades\Crypt;
+use Jet\Request\Client\Contracts\ApiKey;
+use Jet\Request\Client\Exception\InvalidAuthToken;
 
 trait Keyable
 {
-    protected ?string $token;
+    protected ?string $token = null;
     protected ?string $appId = null;
+
+    public function withToken(?string $token = null): void
+    {
+        if(! empty($token)) {
+            $this->setToken($token);
+        }
+        elseif(app(ApiKey::class)) {
+            $this->setKeyable(app(ApiKey::class), function($keyable) {
+                return $keyable->getToken();
+            });
+        }
+    }
+
+    public function setKeyable(ApiKey $apiKey, Closure $keyable): void
+    {
+        $token = $keyable($apiKey);
+
+        if(empty($token) || ! is_string($token)) {
+            $token = null;
+            report(new InvalidAuthToken);
+        }
+
+        if(! empty($token)) {
+            $this->setToken($token);
+        }
+    }
 
     public function token(?string $token = null): string
     {
