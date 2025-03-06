@@ -169,7 +169,7 @@ abstract class RequestService
         return $result;
     }
 
-    final public function api(): static
+    final protected function api(): static
     {
         $request = Http::accept($this->getAccept());
 
@@ -184,7 +184,7 @@ abstract class RequestService
         return $this;
     }
 
-    final public function send(Requestionable $request, ?Closure $process = null): static
+    final protected function send(Requestionable $request, ?Closure $process = null): static
     {
         if($process instanceof Closure) {
             $process($request);
@@ -193,12 +193,12 @@ abstract class RequestService
         return $this;
     }
 
-    final public function response(): Response
+    final protected function response(): Response
     {
         return static::$response;
     }
 
-    final public function result(): Collection
+    final protected function result(): Collection
     {
         $response = $this->response();
         
