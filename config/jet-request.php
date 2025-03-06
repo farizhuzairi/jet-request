@@ -4,7 +4,7 @@ return [
 
     'api' => [
         'http' => env('HOST_API_HTTP', 'http://'),
-        'host' => env('HOST_API_DOMAIN', 'haschanetwork.local'),
+        'host' => env('HOST_API_DOMAIN', ''),
         'endpoint' => env('HOST_API_ENDPOINT', ''),
         'version' => env('HOST_API_VERSION', ''),
     ],

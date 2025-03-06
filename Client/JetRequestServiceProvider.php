@@ -15,7 +15,7 @@ class JetRequestServiceProvider extends ServiceProvider
             __DIR__.'/../config/jet-request.php', 'jet-request'
         );
 
-        $this->defaultApi();
+        $this->default_api_tokens();
     }
     
     public function boot(): void
@@ -23,7 +23,7 @@ class JetRequestServiceProvider extends ServiceProvider
         //
     }
 
-    protected function defaultApi(): void
+    protected function default_api_tokens(): void
     {
         $this->app->scoped(ApiKey::class, function(Application $app) {
             $config = $app->config['jet-request'];

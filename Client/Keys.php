@@ -3,11 +3,12 @@
 namespace Jet\Request\Client;
 
 use Closure;
+use Jet\Request\Client\Traits\UseKey;
 use Jet\Request\Client\Contracts\ApiKey;
 
 class Keys implements ApiKey
 {
-    use \Jet\Request\Client\Traits\UseKey;
+    use UseKey;
 
     public function token(): ?string
     {
