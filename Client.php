@@ -23,24 +23,24 @@ class Client extends RequestService implements Requestionable
         array $data = [],
         Closure|string|null $method = null,
         Closure|string|null $accept = null,
-        ?Closure $closure = null
+        ?Closure $request = null
     ): static
     {
         if($method instanceof Closure) {
-            $closure = $method;
+            $request = $method;
             $method = null;
         }
 
         if($accept instanceof Closure) {
-            $closure = $accept;
+            $request = $accept;
             $accept = null;
         }
         
         $object = new self($data, $method, $accept);
 
-        $object->send($object, function($request) use ($closure) {
-            if($closure instanceof Closure) $closure($request);
-            $request->api();
+        $object->send($object, function($response) use ($request) {
+            if($request instanceof Closure) $request($response);
+            $response->api();
         });
 
         return $object;

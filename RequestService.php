@@ -193,17 +193,14 @@ abstract class RequestService
         return $this;
     }
 
-    final protected function response(): Response
+    final public function response(): Response
     {
         return static::$response;
     }
 
-    final protected function result(): Collection
+    final public function result(): Collection
     {
-        $response = $this->response();
-        
-        if(! $response->ok()) return collect([]);
-        return $response->collect();
+        return $this->response()?->collect() ?? collect([]);
     }
 
     abstract public function getResponse(): Response;

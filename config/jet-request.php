@@ -11,6 +11,6 @@ return [
 
     'token' => env('AUTH_TOKEN', null),
 
-    'token_service' => \Jet\Request\Client\Keys::class,
+    'token_service' => env("TOKEN_SERVICE", \Jet\Request\Client\Keys::class),
 
 ];
