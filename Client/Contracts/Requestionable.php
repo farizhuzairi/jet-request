@@ -9,7 +9,7 @@ interface Requestionable
      * 
      */
     public static function request(
-        array $data = [],
+        \Closure|array $data = [],
         \Closure|string|null $method = null,
         \Closure|string|null $accept = null,
         \Closure|null $closure = null

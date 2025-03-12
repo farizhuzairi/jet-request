@@ -20,12 +20,17 @@ class Client extends RequestService implements Requestionable
     }
 
     public static function request(
-        array $data = [],
+        Closure|array $data = [],
         Closure|string|null $method = null,
         Closure|string|null $accept = null,
         ?Closure $request = null
     ): static
     {
+        if($data instanceof Closure) {
+            $request = $data;
+            $data = [];
+        }
+
         if($method instanceof Closure) {
             $request = $method;
             $method = null;
