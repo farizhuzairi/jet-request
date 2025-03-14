@@ -46,11 +46,4 @@ class Keys implements ApiKey
 
         return $this;
     }
-
-    public function reset(?string $token = null): void
-    {
-        $this->token = ! empty($token) ? $token : null;
-        static::$withFormatting = false;
-        static::$formater = null;
-    }
 }

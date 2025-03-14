@@ -17,11 +17,6 @@ trait Keyable
         if(! empty($token)) {
             $this->setToken($token);
         }
-        // elseif(app(ApiKey::class)) {
-        //     $this->setKeyable(app(ApiKey::class), function($keyable) {
-        //         return $keyable->getToken();
-        //     });
-        // }
     }
 
     public function setKeyable(ApiKey $apiKey, Closure $keyable): void

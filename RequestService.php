@@ -9,14 +9,9 @@ use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\RequestException;
-use Jet\Request\Client\Contracts\Requestionable;
 
 abstract class RequestService
 {
-    protected static PendingRequest|Response $response;
-    protected static string $_METHOD = "post";
-    protected static string $_ACCEPT = "application/json";
-    
     use
     \Jet\Request\Client\Traits\Hostable,
     \Jet\Request\Client\Traits\UseTracer;
@@ -25,6 +20,10 @@ abstract class RequestService
     protected string $method;
     protected string $accept;
 
+    private PendingRequest|Response $response;
+    private static string $_METHOD = "post";
+    private static string $_ACCEPT = "application/json";
+    
     public function __construct(
         array $data,
         ?string $method,
@@ -37,8 +36,6 @@ abstract class RequestService
 
         if(empty($this->method)) $this->method = static::$_METHOD;
         if(empty($this->accept)) $this->accept = static::$_ACCEPT;
-
-        if(! isset(static::$response)) $this->api();
     }
 
     private function setProperties(array $data, ?string $method, ?string $accept): void
@@ -70,7 +67,7 @@ abstract class RequestService
     protected function hasResponse(): bool
     {
         try {
-            if(static::$response instanceof Response) {
+            if($this->response instanceof Response) {
                 return true;
             }
             throw new \Exception("Error Processing Request: Invalid data object request.");
@@ -144,50 +141,35 @@ abstract class RequestService
         return $this->accept;
     }
 
-    final protected function dataProcess(PendingRequest $request, string $method, string $url, array $data): Response
+    final protected function api(?Closure $request): static
     {
-        $result = null;
-
-        try {
-
-            switch($method) {
-                case "get";
-                $result = $request->get($url);
-                break;
-                
-                case "post":
-                default:
-                $result = $request->post($url, $data);
-                break;
-            }
-
-        } catch (RequestException $e) {
-            report($e->getMessage());
-            $result = $this->invalidResponse();
+        if($request instanceof Closure) {
+            $request($this);
         }
 
-        return $result;
-    }
-
-    final protected function api(): static
-    {
-        $request = Http::accept($this->getAccept());
+        $response = Http::accept($this->getAccept());
 
         if($this->hasToken()) {
-            $request->withToken($this->getToken());
+            $response->withToken($this->getToken());
         }
         
-        $request->withHeaders($this->getHeader());
+        $response->withHeaders($this->getHeader());
         // ->retry(3, 1000, throw: false);
 
-        static::$response = $this->dataProcess($request, $this->getMethod(), $this->getUrl(), $this->getData());
-        return $this;
-    }
+        switch($this->getMethod()) {
+            
+            case "get";
+            $this->response = $response->get($this->getUrl());
+            break;
+            
+            case "post":
+            $this->response = $response->post($this->getUrl(), $this->getData());
+            break;
 
-    final protected function send(Requestionable $request, ?Closure $process = null): static
-    {
-        if($process instanceof Closure) {
-            $process($request);
+            default:
+            $this->response = $this->invalidResponse();
+            break;
+
         }
 
         return $this;
@@ -195,7 +177,7 @@ abstract class RequestService
 
     final public function response(): Response
     {
-        return static::$response;
+        return $this->response;
     }
 
     final public function result(): Collection

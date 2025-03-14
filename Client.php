@@ -24,7 +24,7 @@ class Client extends RequestService implements Requestionable
         Closure|string|null $method = null,
         Closure|string|null $accept = null,
         ?Closure $request = null
-    ): static
+    ): Requestionable
     {
         if($data instanceof Closure) {
             $request = $data;
@@ -41,14 +41,8 @@ class Client extends RequestService implements Requestionable
             $accept = null;
         }
         
-        $object = new self($data, $method, $accept);
-
-        $object->send($object, function($response) use ($request) {
-            if($request instanceof Closure) $request($response);
-            $response->api();
-        });
-
-        return $object;
+        $_requestion = new self($data, $method, $accept);
+        return $_requestion->api($request);
     }
 
     public function getResponse(): Response

@@ -110,11 +110,8 @@ trait Hostable
     {
         $default = [
             'User-Agent' => 'EMS/1.0.0 Base/06846.347 ' . config('app.name'),
-            'App-ID' => '',
-            'Request-ID' => '',
-            'Userable-Key' => '',
-            'License-Key' => '',
-            'Visit' => '',
+            'App-ID' => $this->getAppId(),
+            'Request-ID' => $this->getRequestId(),
         ];
 
         $this->headers = array_merge($this->headers, $default);

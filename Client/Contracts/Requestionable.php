@@ -13,5 +13,5 @@ interface Requestionable
         \Closure|string|null $method = null,
         \Closure|string|null $accept = null,
         \Closure|null $closure = null
-    ): static;
+    ): Requestionable;
 }
