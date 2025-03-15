@@ -3,8 +3,8 @@
 namespace Jet\Request;
 
 use Closure;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\PendingRequest;
@@ -53,29 +53,59 @@ abstract class RequestService
         }
     }
 
-    protected function invalidResponse(): Response|JsonResponse
+    protected function invalidResponse(?Response $response = null): Response
     {
-        return response()->json([
-            'successful' => false,
-            'statusCode' => 500,
-            'message' => "There was a problem with the internal server.",
-            'results' => []
-        ])
-        ->setStatusCode(500);
-    }
+        if($response instanceof Response) {
 
-    protected function hasResponse(): bool
-    {
-        try {
-            if($this->response instanceof Response) {
-                return true;
-            }
-            throw new \Exception("Error Processing Request: Invalid data object request.");
-        } catch (RequestException $e) {
-            report($e->getMessage());
+            Log::error(
+                "Resource error or server failure.",
+                [
+                    'request' => $this->getUrl(),
+                    'method' => $this->getMethod(),
+                    'data' => $this->getData(),
+                    'error_details' => $response->collect()->only(['message', 'exception', 'file', 'line'])->toArray()
+                ]
+            );
+
         }
 
-        return false;
+        if($response === null) {
+
+            Log::error(
+                "Bad Request. Http request error on internal server.",
+                [
+                    'request' => $this->getUrl(),
+                    'method' => $this->getMethod(),
+                    'data' => $this->getData(),
+                    'error_details' => []
+                ]
+            );
+
+            $jsonResponse = response()->json([
+                'successful' => false,
+                'statusCode' => 400,
+                'message' => "Bad Request. Data not found.",
+                'results' => []
+            ], 400);
+
+        }
+        else {
+            $jsonResponse = response()->json([
+                'successful' => false,
+                'statusCode' => 500,
+                'message' => "There was a problem with the internal server.",
+                'results' => []
+            ], 500);
+        }
+
+        return new Response(
+            new \GuzzleHttp\Psr7\Response(
+                $jsonResponse->getStatusCode(),
+                $jsonResponse->headers->all(),
+                json_encode($jsonResponse->getData())
+            ),
+            Http::fake()
+        );
     }
 
     public function data(array $data = []): static
@@ -159,19 +189,24 @@ abstract class RequestService
         switch($this->getMethod()) {
             
             case "get";
-            $this->response = $response->get($this->getUrl());
+            $response = $response->get($this->getUrl());
             break;
             
             case "post":
-            $this->response = $response->post($this->getUrl(), $this->getData());
+            $response = $response->post($this->getUrl(), $this->getData());
             break;
 
             default:
-            $this->response = $this->invalidResponse();
+            $response = $this->invalidResponse();
             break;
 
         }
 
+        if(! $response->collect()->has(['successful', 'statusCode', 'message', 'results'])) {
+            $response = $this->invalidResponse($response);
+        }
+
+        $this->response = $response;
         return $this;
     }
 

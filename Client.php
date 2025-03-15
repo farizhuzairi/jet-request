@@ -24,7 +24,7 @@ class Client extends RequestService implements Requestionable
         Closure|string|null $method = null,
         Closure|string|null $accept = null,
         ?Closure $request = null
-    ): Requestionable
+    ): self
     {
         if($data instanceof Closure) {
             $request = $data;
