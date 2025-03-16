@@ -4,17 +4,16 @@ namespace Jet\Request;
 
 use Closure;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\PendingRequest;
-use Illuminate\Http\Client\RequestException;
 
 abstract class RequestService
 {
     use
     \Jet\Request\Client\Traits\Hostable,
-    \Jet\Request\Client\Traits\UseTracer;
+    \Jet\Request\Client\Traits\UseTracer,
+    \Jet\Request\Client\Supports\UseInvalidResponse;
 
     protected array $data = [];
     protected string $method;
@@ -23,6 +22,10 @@ abstract class RequestService
     private PendingRequest|Response $response;
     private static string $_METHOD = "post";
     private static string $_ACCEPT = "application/json";
+
+    protected bool $successful = false;
+    protected int $statusCode = 0;
+    protected ?string $message = null;
     
     public function __construct(
         array $data,
@@ -51,61 +54,6 @@ abstract class RequestService
         if(! empty($accept)) {
             $this->accept = $accept;
         }
-    }
-
-    protected function invalidResponse(?Response $response = null): Response
-    {
-        if($response instanceof Response) {
-
-            Log::error(
-                "Resource error or server failure.",
-                [
-                    'request' => $this->getUrl(),
-                    'method' => $this->getMethod(),
-                    'data' => $this->getData(),
-                    'error_details' => $response->collect()->only(['message', 'exception', 'file', 'line'])->toArray()
-                ]
-            );
-
-        }
-
-        if($response === null) {
-
-            Log::error(
-                "Bad Request. Http request error on internal server.",
-                [
-                    'request' => $this->getUrl(),
-                    'method' => $this->getMethod(),
-                    'data' => $this->getData(),
-                    'error_details' => []
-                ]
-            );
-
-            $jsonResponse = response()->json([
-                'successful' => false,
-                'statusCode' => 400,
-                'message' => "Bad Request. Data not found.",
-                'results' => []
-            ], 400);
-
-        }
-        else {
-            $jsonResponse = response()->json([
-                'successful' => false,
-                'statusCode' => 500,
-                'message' => "There was a problem with the internal server.",
-                'results' => []
-            ], 500);
-        }
-
-        return new Response(
-            new \GuzzleHttp\Psr7\Response(
-                $jsonResponse->getStatusCode(),
-                $jsonResponse->headers->all(),
-                json_encode($jsonResponse->getData())
-            ),
-            Http::fake()
-        );
     }
 
     public function data(array $data = []): static
@@ -206,8 +154,18 @@ abstract class RequestService
             $response = $this->invalidResponse($response);
         }
 
-        $this->response = $response;
+        $this->assetable($response);
         return $this;
+    }
+
+    final protected function assetable(Response $response): void
+    {
+        $this->response = $response;
+
+        $data = $response->collect();
+        $this->successful = $data['successful'];
+        $this->statusCode = $data['statusCode'];
+        $this->message = $data['message'];
     }
 
     final public function response(): Response
@@ -217,11 +175,35 @@ abstract class RequestService
 
     final public function result(): Collection
     {
-        return $this->response()?->collect() ?? collect([]);
+        $data = $this->response()->collect();
+
+        if($data instanceof Collection) {
+            return $data->only('results');
+        }
+
+        return collect([]);
+    }
+
+    public function successful(): bool
+    {
+        return $this->successful;
+    }
+
+    public function statusCode(): int
+    {
+        return $this->statusCode;
+    }
+
+    public function message(): ?string
+    {
+        return $this->message;
     }
 
     abstract public function getResponse(): Response;
     abstract public function getResult(): Collection;
+    abstract public function getSuccessful(): bool;
+    abstract public function getStatusCode(): int;
+    abstract public function getMessage(): ?string;
 
     public function __call($name, $arguments)
     {

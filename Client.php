@@ -54,4 +54,19 @@ class Client extends RequestService implements Requestionable
     {
         return $this->result();
     }
+
+    public function getSuccessful(): bool
+    {
+        return $this->successful();
+    }
+
+    public function getStatusCode(): int
+    {
+        return $this->statusCode();
+    }
+
+    public function getMessage(): ?string
+    {
+        return $this->message();
+    }
 }
