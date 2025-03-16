@@ -45,7 +45,7 @@ trait Keyable
     public function setToken(string $token): void
     {
         if(! empty($token)) {
-            $token = "Bearer {$token}";
+            $token = "{$token}";
             $this->token = Crypt::encrypt($token);
         }
     }
