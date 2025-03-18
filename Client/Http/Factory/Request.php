@@ -5,7 +5,7 @@ namespace Jet\Request\Client\Http\Factory;
 use Closure;
 use Jet\Request\Client\Http\Factory\RequestService;
 
-class Request
+final class Request
 {
     public function request(
         Closure|array $data = [],

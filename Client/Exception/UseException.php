@@ -1,16 +1,17 @@
 <?php
 
-namespace Jet\Request\Client\Http\Exception;
+namespace Jet\Request\Client\Exception;
 
-use Exception;
 use Illuminate\Support\Facades\Log;
 
-class InvalidAuthToken extends Exception
+trait UseException
 {
+    protected array $error = [];
+
     public function __construct(
         string $message = '',
         array|int $code = 0,
-        protected array $error = [],
+        array $error = [],
     )
     {
         if(is_array($code)) {
@@ -18,14 +19,18 @@ class InvalidAuthToken extends Exception
             $code = 0;
         }
 
-        $msg = "Invalid Auth Token.";
+        $this->error = $error;
+
+        $msg = $this->use_log_message();
         $message = !empty($message) ? "{$msg} {$message}" : $msg;
         parent::__construct($message, $code);
     }
 
     public function report(): void
     {
-        Log::warning($this->message, array_merge(
+        $level = $this->use_log_level();
+
+        Log::{$level}($this->message, array_merge(
             $this->error,
             [
                 'message' => $this->getMessage(),
@@ -35,5 +40,24 @@ class InvalidAuthToken extends Exception
                 'trace' => $this->getTraceAsString()
             ]
         ));
+    }
+
+    protected function use_log_level(): string
+    {
+        if(property_exists($this, 'logLevelDefault')) {
+            return $this->logLevelDefault;
+        }
+
+        return 'error';
+    }
+
+    protected function use_log_message(): string
+    {
+        if(property_exists($this, 'logMessageDefault')) {
+            return $this->logMessageDefault;
+        }
+        
+
+        return 'Error Processing Request';
     }
 }

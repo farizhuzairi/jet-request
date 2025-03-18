@@ -7,14 +7,15 @@ use Illuminate\Support\Collection;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\PendingRequest;
+use Jet\Request\Client\Contracts\DataResponse;
 use Jet\Request\Client\Contracts\Requestionable;
+use Jet\Request\Client\Supports\InvalidResponse;
 
 class RequestService implements Requestionable
 {
     use
     \Jet\Request\Client\Traits\Hostable,
-    \Jet\Request\Client\Traits\UseTracer,
-    \Jet\Request\Client\Supports\UseInvalidResponse;
+    \Jet\Request\Client\Traits\UseTracer;
 
     protected array $data = [];
     protected string $method;
@@ -24,11 +25,14 @@ class RequestService implements Requestionable
     private static string $_METHOD = "post";
     private static string $_ACCEPT = "application/json";
 
+    private DataResponse $dataResponse;
+    
     protected bool $successful = false;
     protected int $statusCode = 0;
     protected ?string $message = null;
 
-    protected static array $_ORIGIN_DATA_RESULTS = [];
+    private static array $_WRAPPERS;
+    private static ?string $_DATA_WRAPPER;
     
     public function __construct(
         array $data,
@@ -36,7 +40,9 @@ class RequestService implements Requestionable
         ?string $accept
     )
     {
-        static::$_ORIGIN_DATA_RESULTS = config('jet-request.origin_data');
+        $config = config('jet-request');
+        static::$_DATA_WRAPPER = $config['data_wrapper'];
+        static::$_WRAPPERS = $config['wrappers'];
 
         $this->setProperties($data, $method, $accept);
         $this->setDefaultHeader();
@@ -59,6 +65,16 @@ class RequestService implements Requestionable
         if(! empty($accept)) {
             $this->accept = $accept;
         }
+    }
+
+    public function getDataWrapperName(): ?string
+    {
+        return static::$_DATA_WRAPPER;
+    }
+
+    public function getDataWrapper(): array
+    {
+        return static::$_WRAPPERS[static::$_DATA_WRAPPER] ?? [];
     }
 
     public function data(array $data = []): static
@@ -150,21 +166,27 @@ class RequestService implements Requestionable
             break;
 
             default:
-            $response = $this->invalidResponse();
+            $invalidResponse = new InvalidResponse();
+            $response = $invalidResponse($this, null);
             break;
 
         }
 
-        if(! $response->collect()->has(static::$_ORIGIN_DATA_RESULTS)) {
-            $response = $this->invalidResponse($response);
-        }
-
-        $this->assetable($response);
+        $this->set_data_response($response);
         return $this;
     }
 
-    protected function assetable($response): void
+    private function set_data_response($response): void
     {
+        $response = DataResponse::response($response);
+        $this->dataResponse = $response;
+
+        dd($response);
+        if(! $response->collect()->has(static::$_ORIGIN_DATA_RESULTS)) {
+            $invalidResponse = new InvalidResponse();
+            $response = $invalidResponse($this, $response);
+        }
+
         $this->response = $response;
 
         $data = $response->collect();

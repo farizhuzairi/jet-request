@@ -13,6 +13,34 @@ return [
 
     'token_service' => env("TOKEN_SERVICE", null),
 
-    'origin_data' => ['successful', 'statusCode', 'message', 'results']
+    'data_wrapper' => 'data_meta',
+
+    'wrappers' => [
+        'data' => [
+            'contents' => [
+                'data'
+            ],
+            'object' => \Jet\Request\Client\Factory\Response\Data::class,
+            'additional' => null,
+        ],
+        'data_meta' => [
+            'contents' => [
+                'data',
+                'meta'
+            ],
+            'object' => \Jet\Request\Client\Factory\Response\DataMeta::class,
+            'additional' => null,
+        ],
+        'data_results' => [
+            'contents' => [
+                'successful',
+                'statusCode',
+                'message',
+                'results'
+            ],
+            'object' => \Jet\Request\Client\Factory\Response\Results::class,
+            'additional' => null,
+        ],
+    ]
 
 ];

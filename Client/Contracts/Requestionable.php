@@ -13,6 +13,9 @@ interface Requestionable
         ?string $accept
     );
 
+    public function getDataWrapperName(): ?string;
+    public function getDataWrapper(): array;
+
     public function data(array $data = []): static;
     public function setData(array $data): void;
     public function getData(): array;
