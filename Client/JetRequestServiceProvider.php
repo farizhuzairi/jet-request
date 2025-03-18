@@ -2,9 +2,9 @@
 
 namespace Jet\Request\Client;
 
-use Jet\Request\Client\Keys;
 use Illuminate\Support\ServiceProvider;
-use Jet\Request\Client\Contracts\ApiKey;
+use Jet\Request\Client\Contracts\Keyable;
+use Jet\Request\Client\Http\Factory\Request as ClientRequestFactory;
 use Illuminate\Contracts\Foundation\Application;
 
 class JetRequestServiceProvider extends ServiceProvider
@@ -14,6 +14,10 @@ class JetRequestServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(
             __DIR__.'/../config/jet-request.php', 'jet-request'
         );
+
+        $this->app->bind('client-request-factory', function() {
+            return new ClientRequestFactory();
+        });
 
         $this->default_api_tokens();
     }
@@ -25,10 +29,9 @@ class JetRequestServiceProvider extends ServiceProvider
 
     protected function default_api_tokens(): void
     {
-        $this->app->scoped(ApiKey::class, function(Application $app) {
-            $config = $app->config['jet-request'];
-            $service = $config['token_service'];
-            return new $service($config['token']);
+        $this->app->scoped(Keyable::class, function(Application $app) {
+            $service = $app->config['jet-request.token_service'];
+            return new $service();
         });
     }
 }

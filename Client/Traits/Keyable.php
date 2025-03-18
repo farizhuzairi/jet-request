@@ -4,86 +4,50 @@ namespace Jet\Request\Client\Traits;
 
 use Closure;
 use Illuminate\Support\Facades\Crypt;
-use Jet\Request\Client\Contracts\ApiKey;
-use Jet\Request\Client\Exception\InvalidAuthToken;
+use Jet\Request\Client\Contracts\Keyable as KeyService;
 
 trait Keyable
 {
-    protected ?string $token = null;
-    protected ?string $appId = null;
+    protected ?KeyService $keyService = null;
+    protected bool $useToken = false;
 
-    public function withToken(?string $token = null): void
+    public function keyService(KeyService $keyService, Closure $keyable): void
     {
-        if(! empty($token)) {
-            $this->setToken($token);
+        if($keyService instanceof KeyService) {
+
+            $this->keyService = $keyService;
+
+            if($keyable instanceof Closure) {
+                $keyable($this);
+            }
+
         }
-    }
-
-    public function setKeyable(ApiKey $apiKey, Closure $keyable): void
-    {
-        $token = $keyable($apiKey);
-
-        if(empty($token) || ! is_string($token)) {
-            $token = null;
-            report(new InvalidAuthToken);
-        }
-
-        if(! empty($token)) {
-            $this->setToken($token);
-        }
-    }
-
-    public function token(?string $token = null): string
-    {
-        if(! empty($token)) {
-            $this->setToken($token);
-        }
-
-        return $this->getToken();
-    }
-
-    public function setToken(string $token): void
-    {
-        if(! empty($token)) {
-            $token = "{$token}";
-            $this->token = Crypt::encrypt($token);
-        }
-    }
-
-    public function getToken(): ?string
-    {
-        if($this->hasToken()) {
-            return Crypt::decrypt($this->token);
-        }
-
-        return null;
     }
 
     public function hasToken(): bool
     {
-        if(! empty($this->token)) {
-            return true;
+        return $this->useToken;
+    }
+
+    public function token(?string $token = null): static
+    {
+        if(! empty($token)) {
+            $this->setToken($token);
         }
 
-        return false;
+        return $this;
     }
 
-    public function appId(?string $appId): ?string
+    public function setToken(string $token): void
     {
-        if(! empty($appId)) {
-            $this->setAppId($appId);
-        }
-
-        return $this->getAppId();
+        // set to key service factory
+        // set UseToken object as true if token not null
     }
 
-    public function setAppId(?string $appId): void
+    public function getToken(): ?string
     {
-        $this->appId = (string) $appId;
-    }
+        // get from key service factory
 
-    public function getAppId(): ?string
-    {
-        return $this->appId;
+        return null;
     }
 }

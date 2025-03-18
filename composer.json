@@ -1,5 +1,7 @@
 {
+    "$schema": "https://getcomposer.org/schema.json",
     "name": "farizhuzairi/jet-request",
+    "version": "1.0.0",
     "type": "library",
     "description": "Http Request.",
     "keywords": [
@@ -19,7 +21,8 @@
         }
     ],
     "require": {
-        "php": "^8.2"
+        "php": "^8.2",
+        "hascamp/basecrypt": "^1.0"
     },
     "require-dev": {
         "orchestra/testbench": "^9.3"

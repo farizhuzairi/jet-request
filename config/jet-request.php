@@ -3,16 +3,16 @@
 return [
 
     'api' => [
-        'http' => env('HOST_API_HTTP', 'http://'),
-        'host' => env('HOST_API_DOMAIN', ''),
-        'endpoint' => env('HOST_API_ENDPOINT', ''),
-        'version' => env('HOST_API_VERSION', ''),
+        'http' => env('HOST_API_HTTP', 'https://'),
+        'host' => env('HOST_API_DOMAIN', 'haschanetwork.net'),
+        'endpoint' => env('HOST_API_ENDPOINT', 'ems'),
+        'version' => env('HOST_API_VERSION', '1'),
     ],
 
     'token' => env('AUTH_TOKEN', null),
 
-    'token_service' => env("TOKEN_SERVICE", \Jet\Request\Client\Keys::class),
+    'token_service' => env("TOKEN_SERVICE", null),
 
-    // 'ems' => false
+    'origin_data' => ['successful', 'statusCode', 'message', 'results']
 
 ];

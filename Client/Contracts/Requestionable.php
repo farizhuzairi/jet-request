@@ -2,18 +2,47 @@
 
 namespace Jet\Request\Client\Contracts;
 
-use Illuminate\Support\Collection;
+use Closure;
 use Illuminate\Http\Client\Response;
 
 interface Requestionable
 {
-    public static function request(
-        \Closure|array $data = [],
-        \Closure|string|null $method = null,
-        \Closure|string|null $accept = null,
-        \Closure|null $closure = null
-    ): self;
+    public function __construct(
+        array $data,
+        ?string $method,
+        ?string $accept
+    );
 
+    public function data(array $data = []): static;
+    public function setData(array $data): void;
+    public function getData(): array;
+
+    public function method(?string $method = null): static;
+    public function setMethod(string $method): void;
+    public function getMethod(): string;
+
+    public function accept(?string $accept = null): static;
+    public function setAccept(string $accept): void;
+    public function getAccept(): string;
+
+    public function api(?Closure $request): static;
+
+    public function response(): Response;
     public function getResponse(): Response;
-    public function getResult(): Collection;
+
+    public function results(): array;
+    public function getResults(): array;
+
+    public function successful(): bool;
+    public function getSuccessful(): bool;
+
+    public function statusCode(): int;
+    public function getStatusCode(): int;
+
+    public function message(): ?string;
+    public function getMessage(): ?string;
+
+    public function getOriginalResponse(): array;
+
+    public function __call($name, $arguments);
 }

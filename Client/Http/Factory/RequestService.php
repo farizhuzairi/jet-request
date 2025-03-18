@@ -1,14 +1,15 @@
 <?php
 
-namespace Jet\Request;
+namespace Jet\Request\Client\Http\Factory;
 
 use Closure;
 use Illuminate\Support\Collection;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\PendingRequest;
+use Jet\Request\Client\Contracts\Requestionable;
 
-abstract class RequestService
+class RequestService implements Requestionable
 {
     use
     \Jet\Request\Client\Traits\Hostable,
@@ -26,6 +27,8 @@ abstract class RequestService
     protected bool $successful = false;
     protected int $statusCode = 0;
     protected ?string $message = null;
+
+    protected static array $_ORIGIN_DATA_RESULTS = [];
     
     public function __construct(
         array $data,
@@ -33,6 +36,8 @@ abstract class RequestService
         ?string $accept
     )
     {
+        static::$_ORIGIN_DATA_RESULTS = config('jet-request.origin_data');
+
         $this->setProperties($data, $method, $accept);
         $this->setDefaultHeader();
         $this->setDefaultHostable();
@@ -72,7 +77,7 @@ abstract class RequestService
         }
     }
 
-    protected function getData(): array
+    public function getData(): array
     {
         return $this->data;
     }
@@ -93,7 +98,7 @@ abstract class RequestService
         }
     }
 
-    protected function getMethod(): string
+    public function getMethod(): string
     {
         return $this->method;
     }
@@ -114,12 +119,12 @@ abstract class RequestService
         }
     }
 
-    protected function getAccept(): string
+    public function getAccept(): string
     {
         return $this->accept;
     }
 
-    final protected function api(?Closure $request): static
+    public function api(?Closure $request): static
     {
         if($request instanceof Closure) {
             $request($this);
@@ -150,7 +155,7 @@ abstract class RequestService
 
         }
 
-        if(! $response->collect()->has(['successful', 'statusCode', 'message', 'results'])) {
+        if(! $response->collect()->has(static::$_ORIGIN_DATA_RESULTS)) {
             $response = $this->invalidResponse($response);
         }
 
@@ -158,7 +163,7 @@ abstract class RequestService
         return $this;
     }
 
-    final protected function assetable(Response $response): void
+    protected function assetable($response): void
     {
         $this->response = $response;
 
@@ -168,20 +173,20 @@ abstract class RequestService
         $this->message = $data['message'];
     }
 
-    final public function response(): Response
+    public function response(): Response
     {
         return $this->response;
     }
 
-    final public function result(): Collection
+    public function results(): array
     {
         $data = $this->response()->collect();
 
         if($data instanceof Collection) {
-            return $data->only('results');
+            return $data->get('results') ?? [];
         }
 
-        return collect([]);
+        return [];
     }
 
     public function successful(): bool
@@ -199,11 +204,10 @@ abstract class RequestService
         return $this->message;
     }
 
-    abstract public function getResponse(): Response;
-    abstract public function getResult(): Collection;
-    abstract public function getSuccessful(): bool;
-    abstract public function getStatusCode(): int;
-    abstract public function getMessage(): ?string;
+    public function getOriginalResponse(): array
+    {
+        return $this->response()->collect()->only(static::$_ORIGIN_DATA_RESULTS)->all();
+    }
 
     public function __call($name, $arguments)
     {
@@ -215,5 +219,30 @@ abstract class RequestService
         }
 
         return $result;
+    }
+
+    public function getResponse(): Response
+    {
+        return $this->response();
+    }
+
+    public function getResults(): array
+    {
+        return $this->results();
+    }
+
+    public function getSuccessful(): bool
+    {
+        return $this->successful();
+    }
+
+    public function getStatusCode(): int
+    {
+        return $this->statusCode();
+    }
+
+    public function getMessage(): ?string
+    {
+        return $this->message();
     }
 }
