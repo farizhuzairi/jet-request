@@ -4,9 +4,9 @@ return [
 
     'api' => [
         'http' => env('HOST_API_HTTP', 'https://'),
-        'host' => env('HOST_API_DOMAIN', 'haschanetwork.net'),
-        'endpoint' => env('HOST_API_ENDPOINT', 'ems'),
-        'version' => env('HOST_API_VERSION', '1'),
+        'host' => env('HOST_API_DOMAIN', ''),
+        'endpoint' => env('HOST_API_ENDPOINT', ''),
+        'version' => env('HOST_API_VERSION', ''),
     ],
 
     'token' => env('AUTH_TOKEN', null),

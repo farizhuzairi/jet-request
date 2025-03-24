@@ -153,17 +153,21 @@ class RequestService implements Requestionable
 
         }
 
-        // dd($response->object());
         $this->set_data_response($response);
         return $this;
     }
 
     private function set_data_response(Response $response): void
     {
-        $this->dataResponse = ResponseFactory::response(config('jet-request'), $this, $response, function($f) {
-            $this->response = $f->getResponse();
-            $this->dataContents = $f->getDataResultContents();
-        });
+        $this->dataResponse = ResponseFactory::response(
+            config('jet-request'),
+            $this, $response,
+            function($f) {
+                $this->response = $f->getResponse();
+                $this->dataContents = $f->getDataResultContents();
+            }
+        );
+        // dd($this->results());
     }
 
     public function response(): Response
