@@ -3,13 +3,13 @@
 namespace Jet\Request\Client\Http\Factory;
 
 use Closure;
-use Illuminate\Support\Collection;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\PendingRequest;
 use Jet\Request\Client\Contracts\DataResponse;
 use Jet\Request\Client\Contracts\Requestionable;
 use Jet\Request\Client\Supports\InvalidResponse;
+use Jet\Request\Client\Factory\Response\ResponseFactory;
 
 class RequestService implements Requestionable
 {
@@ -22,17 +22,12 @@ class RequestService implements Requestionable
     protected string $accept;
 
     private PendingRequest|Response $response;
+    private array $dataContents = [];
+
     private static string $_METHOD = "post";
     private static string $_ACCEPT = "application/json";
 
     private DataResponse $dataResponse;
-    
-    protected bool $successful = false;
-    protected int $statusCode = 0;
-    protected ?string $message = null;
-
-    private static array $_WRAPPERS;
-    private static ?string $_DATA_WRAPPER;
     
     public function __construct(
         array $data,
@@ -40,19 +35,15 @@ class RequestService implements Requestionable
         ?string $accept
     )
     {
-        $config = config('jet-request');
-        static::$_DATA_WRAPPER = $config['data_wrapper'];
-        static::$_WRAPPERS = $config['wrappers'];
-
-        $this->setProperties($data, $method, $accept);
-        $this->setDefaultHeader();
-        $this->setDefaultHostable();
+        $this->has_properties($data, $method, $accept);
+        $this->has_default_headers();
+        $this->has_default_hostable();
 
         if(empty($this->method)) $this->method = static::$_METHOD;
         if(empty($this->accept)) $this->accept = static::$_ACCEPT;
     }
 
-    private function setProperties(array $data, ?string $method, ?string $accept): void
+    private function has_properties(array $data, ?string $method, ?string $accept): void
     {
         if(! empty($data)) {
             $this->data = $data;
@@ -65,16 +56,6 @@ class RequestService implements Requestionable
         if(! empty($accept)) {
             $this->accept = $accept;
         }
-    }
-
-    public function getDataWrapperName(): ?string
-    {
-        return static::$_DATA_WRAPPER;
-    }
-
-    public function getDataWrapper(): array
-    {
-        return static::$_WRAPPERS[static::$_DATA_WRAPPER] ?? [];
     }
 
     public function data(array $data = []): static
@@ -176,23 +157,12 @@ class RequestService implements Requestionable
         return $this;
     }
 
-    private function set_data_response($response): void
+    private function set_data_response(Response $response): void
     {
-        $response = DataResponse::response($response);
-        $this->dataResponse = $response;
-
-        dd($response);
-        if(! $response->collect()->has(static::$_ORIGIN_DATA_RESULTS)) {
-            $invalidResponse = new InvalidResponse();
-            $response = $invalidResponse($this, $response);
-        }
-
-        $this->response = $response;
-
-        $data = $response->collect();
-        $this->successful = $data['successful'];
-        $this->statusCode = $data['statusCode'];
-        $this->message = $data['message'];
+        $this->dataResponse = ResponseFactory::response($this, $response, function($f) {
+            $this->response = $f->getResponse();
+            $this->dataContents = $f->getDataResultContents();
+        });
     }
 
     public function response(): Response
@@ -202,45 +172,35 @@ class RequestService implements Requestionable
 
     public function results(): array
     {
-        $data = $this->response()->collect();
-
-        if($data instanceof Collection) {
-            return $data->get('results') ?? [];
-        }
-
-        return [];
+        return $this->dataResponse->getDataResponse($this->dataContents);
     }
 
     public function successful(): bool
     {
-        return $this->successful;
+        return $this->dataResponse->getDataResponse('successful');
     }
 
     public function statusCode(): int
     {
-        return $this->statusCode;
+        return $this->dataResponse->getDataResponse('statusCode');
     }
 
     public function message(): ?string
     {
-        return $this->message;
+        return $this->dataResponse->getDataResponse('message');
     }
 
-    public function getOriginalResponse(): array
+    public function getOriginalResults(bool $isHttp = false): array
     {
-        return $this->response()->collect()->only(static::$_ORIGIN_DATA_RESULTS)->all();
-    }
-
-    public function __call($name, $arguments)
-    {
-        try {
-            $result = $this->response()->{$name}();
-        } catch (\Throwable $e) {
-            report($e->getMessage());
-            $result = null;
+        if(! $isHttp) {
+            return $this->dataResponse->getDataResponse();
         }
 
-        return $result;
+        if(! $this->response()) {
+            return [];
+        }
+
+        return $this->response()?->collect()?->toArray() ?? [];
     }
 
     public function getResponse(): Response

@@ -3,6 +3,7 @@
 namespace Jet\Request\Client\Http\Factory;
 
 use Closure;
+use Jet\Request\Client\Contracts\Requestionable;
 use Jet\Request\Client\Http\Factory\RequestService;
 
 final class Request
@@ -12,7 +13,7 @@ final class Request
         Closure|string|null $method = null,
         Closure|string|null $accept = null,
         ?Closure $request = null
-    ): RequestService
+    ): Requestionable
     {
         if($data instanceof Closure) {
             $request = $data;

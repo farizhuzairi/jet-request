@@ -106,12 +106,12 @@ trait Hostable
         return null;
     }
 
-    protected function setDefaultHeader(): static
+    protected function has_default_headers(): static
     {
         $default = [
             'User-Agent' => 'EMS/1.0.0 Base/06846.347 ' . config('app.name'),
-            'App-ID' => $this->getAppId(),
-            'Request-ID' => $this->getRequestId(),
+            'App-ID' => null,
+            'Request-ID' => null,
         ];
 
         $this->headers = array_merge($this->headers, $default);
@@ -123,7 +123,7 @@ trait Hostable
      * Default attributes
      * 
      */
-    protected function setDefaultHostable(): void
+    protected function has_default_hostable(): void
     {
         $config = config('jet-request');
 
@@ -163,17 +163,17 @@ trait Hostable
         }
     }
 
-    private function httpHost(): string
+    public function httpHost(): string
     {
         return static::$http . static::$host;
     }
 
-    private function endpoint(): string
+    public function endpoint(): string
     {
         return $this->getStrWithPrefix(static::$endpoint) ?? "";
     }
 
-    private function version(): string
+    public function version(): string
     {
         return $this->getStrWithPrefix(static::$version) ?? "";
     }
@@ -194,7 +194,7 @@ trait Hostable
         }
     }
 
-    protected function getTopics(): string
+    public function getTopics(): string
     {
         return $this->getStrWithPrefix(static::$topics) ?? "";
     }

@@ -22,8 +22,7 @@ class InvalidResponse
                 "Unable to recognize http response. Allows for resource errors or server failures to occur.",
                 [
                     'request' => $request?->getUrl(),
-                    'method' => $request?->getMethod(),
-                    'error_details' => $response->collect()->only(['message', 'exception', 'file', 'line'])->toArray()
+                    'method' => $request?->getMethod()
                 ]
             ));
 
@@ -36,8 +35,7 @@ class InvalidResponse
                 400,
                 [
                     'request' => $request?->getUrl(),
-                    'method' => $request?->getMethod(),
-                    'error_details' => []
+                    'method' => $request?->getMethod()
                 ]
             ));
 

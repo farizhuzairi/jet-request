@@ -37,7 +37,7 @@ trait UseException
                 'code' => $this->getCode(),
                 'file' => $this->getFile(),
                 'line' => $this->getLine(),
-                'trace' => $this->getTraceAsString()
+                // 'trace' => $this->getTraceAsString()
             ]
         ));
     }

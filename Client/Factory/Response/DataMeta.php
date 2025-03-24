@@ -2,29 +2,14 @@
 
 namespace Jet\Request\Client\Factory\Response;
 
-use Illuminate\Http\Client\Response;
-use Jet\Request\Client\Contracts\DataResponse;
-
-class DataMeta implements DataResponse
+class DataMeta extends \Jet\Request\Client\Factory\Response\DataResults
 {
-    protected Response $response;
-    
     public function __construct(
-        // public bool $successful,
-        // public int $statusCode,
-        // public ?string $message,
-        // public array $results = [],
-        // public array $meta = [],
-        public $data,
-        public $meta
+        public array $data = [],
+        public array $links = [],
+        public array $meta = [],
     )
     {
-        //
-    }
-
-    public static function response(Response $response): static
-    {
-        $self = new self(...$response->collect());
-        return $self;
+        if(is_array($data)) parent::__construct(...$data);
     }
 }

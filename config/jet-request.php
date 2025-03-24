@@ -16,29 +16,25 @@ return [
     'data_wrapper' => 'data_meta',
 
     'wrappers' => [
-        'data' => [
-            'contents' => [
-                'data'
-            ],
-            'object' => \Jet\Request\Client\Factory\Response\Data::class,
-            'additional' => null,
-        ],
         'data_meta' => [
+            'object' => 'data_meta',
             'contents' => [
                 'data',
+                'links',
                 'meta'
             ],
-            'object' => \Jet\Request\Client\Factory\Response\DataMeta::class,
+            'class' => \Jet\Request\Client\Factory\Response\DataMeta::class,
             'additional' => null,
         ],
         'data_results' => [
+            'object' => 'data_results',
             'contents' => [
                 'successful',
                 'statusCode',
                 'message',
                 'results'
             ],
-            'object' => \Jet\Request\Client\Factory\Response\Results::class,
+            'class' => \Jet\Request\Client\Factory\Response\DataResults::class,
             'additional' => null,
         ],
     ]

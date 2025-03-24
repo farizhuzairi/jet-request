@@ -13,9 +13,6 @@ interface Requestionable
         ?string $accept
     );
 
-    public function getDataWrapperName(): ?string;
-    public function getDataWrapper(): array;
-
     public function data(array $data = []): static;
     public function setData(array $data): void;
     public function getData(): array;
@@ -45,7 +42,29 @@ interface Requestionable
     public function message(): ?string;
     public function getMessage(): ?string;
 
-    public function getOriginalResponse(): array;
+    public function getOriginalResults(bool $isHttp = false): array;
 
-    public function __call($name, $arguments);
+    // Use Hostable
+    public function httpHost(): string;
+    public function endpoint(): string;
+    public function version(): string;
+    public function topics(?string $topics = null): static;
+    public function getTopics(): string;
+    public function url(?string $url = "", bool $isNewUrl = false): static;
+    public function getUrl(): string;
+    public function header(array|string $header, mixed $value = null): static;
+    public function getHeader(?string $key = null): array;
+    public function headers(array $header): static;
+    public function getHeaders(): array;
+
+    // Use Keyable
+    public function hasToken(): bool;
+    public function token(?string $token = null): static;
+    public function setToken(string $token): void;
+    public function getToken(): ?string;
+
+    // Use Tracer
+    public function requestId(?string $id = null): static;
+    public function setRequestId(string $id): void;
+    public function getRequestId(): ?string;
 }
