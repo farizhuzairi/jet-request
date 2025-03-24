@@ -15,21 +15,25 @@ final class ResponseFactory
     protected ?string $dataClass = null;
     protected array $dataWrapper = [];
 
+    private static array $_DATARESULTS;
     private static array $_WRAPPERS;
     private static ?string $_DATA_WRAPPER;
 
     public function __construct(
+        array $config,
         protected Requestionable $request,
         protected ?Response $response,
     )
     {
-        $config = config('jet-request');
-        static::$_DATA_WRAPPER = $config['data_wrapper'];
-        static::$_WRAPPERS = $config['wrappers'];
-
-        if(! empty($this->getDataWrapper())) {
-            $this->dataClass = $this->getDataWrapper()['class'];
-            $this->dataWrapper = $this->getDataWrapper()['contents'];
+        if($config) {
+            static::$_DATA_WRAPPER = $config['data_wrapper'];
+            static::$_WRAPPERS = $config['wrappers'];
+            static::$_DATARESULTS = $config['data_result_response'];
+    
+            if(! empty($this->getDataWrapper())) {
+                $this->dataClass = $this->getDataWrapper()['class'];
+                $this->dataWrapper = $this->getDataWrapper()['contents'];
+            }
         }
     }
 
@@ -60,12 +64,12 @@ final class ResponseFactory
 
     public function getDataResultContents(): array
     {
-        return ['results', 'links', 'meta', 'successful', 'statusCode', 'message'];
+        return static::$_DATARESULTS;
     }
 
-    public static function response(Requestionable $request, ?Response $response, Closure $callback): DataResponse
+    public static function response(array $config, Requestionable $request, ?Response $response, Closure $callback): DataResponse
     {
-        $self = new self($request, $response);
+        $self = new self($config, $request, $response);
         return $self->set_data_object($callback);
     }
 

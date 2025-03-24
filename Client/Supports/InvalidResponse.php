@@ -5,6 +5,7 @@ namespace Jet\Request\Client\Supports;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Jet\Request\Client\Contracts\Requestionable;
+use Jet\Request\Client\Factory\Response\DataMeta;
 use Jet\Request\Client\Http\Exception\JetRequestException;
 
 class InvalidResponse
@@ -39,25 +40,27 @@ class InvalidResponse
                 ]
             ));
 
-            $jsonResponse = response()->json([
-                'successful' => false,
-                'statusCode' => 400,
-                'message' => "Bad Request. Data not found.",
-                'results' => [],
-                'meta' => []
-            ], 400);
+            $jsonResponse = response()->json(DataMeta::from([
+                'data' => [
+                    'successful' => false,
+                    'statusCode' => 400,
+                    'message' => "Bad Request. Data not found.",
+                    'results' => [],
+                ],
+            ])->getDataResponse(), 400);
 
         }
 
         else {
 
-            $jsonResponse = response()->json([
-                'successful' => false,
-                'statusCode' => 500,
-                'message' => "Server Error. Unable to recognize http response. Allows for resource errors or server failures to occur.",
-                'results' => [],
-                'meta' => []
-            ], 500);
+            $jsonResponse = response()->json(DataMeta::from([
+                'data' => [
+                    'successful' => false,
+                    'statusCode' => 500,
+                    'message' => "Server Error. Unable to recognize http response. Allows for resource errors or server failures to occur.",
+                    'results' => [],
+                ],
+            ])->getDataResponse(), 500);
 
         }
 

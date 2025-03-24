@@ -10,36 +10,16 @@ abstract class DataResponse extends \Spatie\LaravelData\Data
 
         if(isset($arr['data'])) {
 
-            return collect($arr)->filter(function(mixed $value, string|int $key) {
-                return $key !== 'data';
+            $data = collect($arr)->filter(function(mixed $value, string|int $key) {
+                return $key == 'data';
             })->all();
+
+            return array_merge($arr, $data['data']);
 
         }
 
         return $arr;
     }
-
-    // public function setDataResponse(array|string|null $props = ["data", "links", "meta"]): void
-    // {
-    //     if(is_string($props) && property_exists($this, $props)) {
-    //         $this->set_data_to_results($props, $this->{$props});
-    //     }
-
-    //     if(is_array($props)) {
-    //         foreach ($props as $_data) {
-    //             if(property_exists($this, $_data)) {
-    //                 $this->set_data_to_results($_data, $this->{$_data});
-    //             }
-    //         }
-    //     }
-    // }
-
-    // protected function set_data_to_results(string|int $key, array $data, string $results = "results"): void
-    // {
-    //     if(is_array($data) && isset($data['results'])) {
-    //         $this->{$results}[$key] = $data['results'];
-    //     }
-    // }
 
     public function getDataResponse(array|string|null $key = null): mixed
     {

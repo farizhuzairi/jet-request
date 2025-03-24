@@ -20,7 +20,7 @@ return [
             'object' => 'data_meta',
             'contents' => [
                 'data',
-                'links',
+                'author',
                 'meta'
             ],
             'class' => \Jet\Request\Client\Factory\Response\DataMeta::class,
@@ -37,6 +37,8 @@ return [
             'class' => \Jet\Request\Client\Factory\Response\DataResults::class,
             'additional' => null,
         ],
-    ]
+    ],
+
+    'data_result_response' => ['results', 'author', 'meta', 'successful', 'statusCode', 'message'],
 
 ];
