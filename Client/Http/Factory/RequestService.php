@@ -167,7 +167,6 @@ class RequestService implements Requestionable
                 $this->dataContents = $f->getDataResultContents();
             }
         );
-        // dd($this->results());
     }
 
     public function response(): Response
