@@ -11,9 +11,4 @@ class DataResults extends \Jet\Request\Client\Contracts\DataResponse
         public array $results = [],
     )
     {}
-
-    public function getDataResponse(array|string|null $key = null): mixed
-    {
-        return parent::getDataResponse($key);
-    }
 }

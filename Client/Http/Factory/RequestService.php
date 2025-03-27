@@ -174,9 +174,21 @@ class RequestService implements Requestionable
         return $this->response;
     }
 
-    public function results(): array
+    public function results(array|string|null $key = null): array
     {
-        return $this->dataResponse->getDataResponse($this->dataContents);
+        $results = $this->dataResponse->getDataResponse($this->dataContents);
+
+        if(! empty($key)) {
+
+            if(is_string($key)) {
+                $key = [$key];
+            }
+
+            return collect($results)->only($key)->toArray();
+
+        }
+
+        return $results;
     }
 
     public function successful(): bool
@@ -212,9 +224,9 @@ class RequestService implements Requestionable
         return $this->response();
     }
 
-    public function getResults(): array
+    public function getResults(array|string|null $key = null): array
     {
-        return $this->results();
+        return $this->results($key);
     }
 
     public function getSuccessful(): bool

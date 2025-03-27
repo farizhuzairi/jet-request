@@ -30,8 +30,8 @@ interface Requestionable
     public function response(): Response;
     public function getResponse(): Response;
 
-    public function results(): array;
-    public function getResults(): array;
+    public function results(array|string|null $key = null): array;
+    public function getResults(array|string|null $key = null): array;
 
     public function successful(): bool;
     public function getSuccessful(): bool;
