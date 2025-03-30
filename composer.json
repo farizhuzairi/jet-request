@@ -1,7 +1,6 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
     "name": "farizhuzairi/jet-request",
-    "version": "1.0.0",
     "type": "library",
     "description": "Http Request.",
     "keywords": [
