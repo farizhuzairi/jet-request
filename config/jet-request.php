@@ -23,7 +23,7 @@ return [
                 'author',
                 'meta'
             ],
-            'class' => \Jet\Request\Client\Factory\Response\DataMeta::class,
+            'class' => \Jet\Request\Client\Http\Factory\Response\DataMeta::class,
             'additional' => null,
         ],
         'data_results' => [
@@ -34,7 +34,7 @@ return [
                 'message',
                 'results'
             ],
-            'class' => \Jet\Request\Client\Factory\Response\DataResults::class,
+            'class' => \Jet\Request\Client\Http\Factory\Response\DataResults::class,
             'additional' => null,
         ],
     ],

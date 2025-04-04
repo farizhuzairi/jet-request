@@ -1,6 +1,6 @@
 <?php
 
-namespace Jet\Request\Client\Exception;
+namespace Jet\Request\Client\Contracts;
 
 interface Exceptionable
 {

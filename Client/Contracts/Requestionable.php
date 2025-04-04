@@ -56,15 +56,4 @@ interface Requestionable
     public function getHeader(?string $key = null): array;
     public function headers(array $header): static;
     public function getHeaders(): array;
-
-    // Use Keyable
-    public function hasToken(): bool;
-    public function token(?string $token = null): static;
-    public function setToken(string $token): void;
-    public function getToken(): ?string;
-
-    // Use Tracer
-    public function requestId(?string $id = null): static;
-    public function setRequestId(string $id): void;
-    public function getRequestId(): ?string;
 }

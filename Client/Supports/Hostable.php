@@ -1,14 +1,11 @@
 <?php
 
-namespace Jet\Request\Client\Traits;
+namespace Jet\Request\Client\Supports;
 
 use Illuminate\Http\Client\RequestException;
 
 trait Hostable
 {
-    use
-    \Jet\Request\Client\Traits\Keyable;
-
     /**
      * Http
      * 
@@ -109,20 +106,15 @@ trait Hostable
     protected function has_default_headers(): static
     {
         $default = [
-            'User-Agent' => 'EMS/1.0.0 Base/06846.347 ' . config('app.name'),
-            'App-ID' => null,
-            'Request-ID' => null,
+            'X-App-ID' => null,
+            'X-Request-ID' => null,
+            'X-Trace-ID' => null,
         ];
 
         $this->headers = array_merge($this->headers, $default);
         return $this;
     }
 
-    /**
-     * Set Hostable
-     * Default attributes
-     * 
-     */
     protected function has_default_hostable(): void
     {
         $config = config('jet-request');

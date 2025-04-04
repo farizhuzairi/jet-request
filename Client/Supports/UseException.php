@@ -1,6 +1,6 @@
 <?php
 
-namespace Jet\Request\Client\Exception;
+namespace Jet\Request\Client\Supports\Exception;
 
 use Illuminate\Support\Facades\Log;
 
@@ -37,7 +37,6 @@ trait UseException
                 'code' => $this->getCode(),
                 'file' => $this->getFile(),
                 'line' => $this->getLine(),
-                // 'trace' => $this->getTraceAsString()
             ]
         ));
     }

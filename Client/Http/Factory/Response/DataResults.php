@@ -1,6 +1,6 @@
 <?php
 
-namespace Jet\Request\Client\Factory\Response;
+namespace Jet\Request\Client\Http\Factory\Response;
 
 class DataResults extends \Jet\Request\Client\Contracts\DataResponse
 {

@@ -1,9 +1,9 @@
 <?php
 
-namespace Jet\Request\Client\Factory\Response;
+namespace Jet\Request\Client\Http\Factory\Response;
 
 use Jet\Request\Client\Contracts\DataResponse;
-use Jet\Request\Client\Factory\Response\DataResults;
+use Jet\Request\Client\Http\Factory\Response\DataResults;
 
 class DataMeta extends DataResponse
 {

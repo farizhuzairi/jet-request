@@ -5,17 +5,16 @@ namespace Jet\Request\Client\Http\Factory;
 use Closure;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
+use Jet\Request\Client\Supports\Hostable;
 use Illuminate\Http\Client\PendingRequest;
 use Jet\Request\Client\Contracts\DataResponse;
 use Jet\Request\Client\Contracts\Requestionable;
 use Jet\Request\Client\Supports\InvalidResponse;
-use Jet\Request\Client\Factory\Response\ResponseFactory;
+use Jet\Request\Client\Http\Factory\Response\ResponseFactory;
 
 class RequestService implements Requestionable
 {
-    use
-    \Jet\Request\Client\Traits\Hostable,
-    \Jet\Request\Client\Traits\UseTracer;
+    use Hostable;
 
     protected array $data = [];
     protected string $method;
@@ -24,13 +23,13 @@ class RequestService implements Requestionable
     private PendingRequest|Response $response;
     private array $dataContents = [];
 
-    private static string $_METHOD = "post";
-    private static string $_ACCEPT = "application/json";
+    public const _METHOD = "post";
+    public const _ACCEPT = "application/json";
 
     private DataResponse $dataResponse;
     
     public function __construct(
-        array $data,
+        array $data = [],
         ?string $method,
         ?string $accept
     )
@@ -39,8 +38,8 @@ class RequestService implements Requestionable
         $this->has_default_headers();
         $this->has_default_hostable();
 
-        if(empty($this->method)) $this->method = static::$_METHOD;
-        if(empty($this->accept)) $this->accept = static::$_ACCEPT;
+        if(empty($this->method)) $this->method = static::_METHOD;
+        if(empty($this->accept)) $this->accept = static::_ACCEPT;
     }
 
     private function has_properties(array $data, ?string $method, ?string $accept): void
@@ -90,7 +89,8 @@ class RequestService implements Requestionable
 
     public function setMethod(string $method): void
     {
-        if(! empty($method)) {
+        $method = strtolower($method);
+        if(in_array($method, ['get', 'post', 'put', 'patch', 'delete'])) {
             $this->method = $method;
         }
     }
@@ -127,23 +127,17 @@ class RequestService implements Requestionable
             $request($this);
         }
 
-        $response = Http::accept($this->getAccept());
-
-        if($this->hasToken()) {
-            $response->withToken($this->getToken());
-        }
-        
-        $response->withHeaders($this->getHeader());
-        // ->retry(3, 1000, throw: false);
+        $response = Http::accept($this->getAccept())
+        ->withHeaders($this->getHeader());
 
         switch($this->getMethod()) {
             
             case "get";
-            $response = $response->get($this->getUrl());
-            break;
-            
+            case "delete";
             case "post":
-            $response = $response->post($this->getUrl(), $this->getData());
+            case "put":
+            case "patch":
+            $response = $response->{$this->getMethod()}($this->getUrl(), $this->getData());
             break;
 
             default:
