@@ -127,6 +127,8 @@ class RequestService implements Requestionable
             $request($this);
         }
 
+        logger('', $this->getHeader());
+
         $response = Http::accept($this->getAccept())
         ->withHeaders($this->getHeader());
 

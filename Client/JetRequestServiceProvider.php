@@ -24,7 +24,9 @@ class JetRequestServiceProvider extends ServiceProvider
     
     public function boot(): void
     {
-        //
+        $this->publishes([
+            __DIR__.'/../config/jet-request.php' => config_path('jet-request.php'),
+        ], 'jet-request');
     }
 
     protected function default_api_tokens(): void

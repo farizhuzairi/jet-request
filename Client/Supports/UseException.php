@@ -1,6 +1,6 @@
 <?php
 
-namespace Jet\Request\Client\Supports\Exception;
+namespace Jet\Request\Client\Supports;
 
 use Illuminate\Support\Facades\Log;
 
