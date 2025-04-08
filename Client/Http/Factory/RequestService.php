@@ -30,8 +30,8 @@ class RequestService implements Requestionable
     
     public function __construct(
         array $data = [],
-        ?string $method,
-        ?string $accept
+        ?string $method = null,
+        ?string $accept = null
     )
     {
         $this->has_properties($data, $method, $accept);
@@ -126,8 +126,6 @@ class RequestService implements Requestionable
         if($request instanceof Closure) {
             $request($this);
         }
-
-        logger('', $this->getHeader());
 
         $response = Http::accept($this->getAccept())
         ->withHeaders($this->getHeader());
