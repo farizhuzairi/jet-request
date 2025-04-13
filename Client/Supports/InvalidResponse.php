@@ -5,7 +5,7 @@ namespace Jet\Request\Client\Supports;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Jet\Request\Client\Contracts\Requestionable;
-use Jet\Request\Client\Factory\Response\DataMeta;
+use Jet\Request\Client\Http\Factory\Response\DataMeta;
 use Jet\Request\Client\Http\Exception\JetRequestException;
 
 class InvalidResponse

@@ -155,7 +155,8 @@ class RequestService implements Requestionable
     {
         $this->dataResponse = ResponseFactory::response(
             config('jet-request'),
-            $this, $response,
+            $this,
+            $response,
             function($f) {
                 $this->response = $f->getResponse();
                 $this->dataContents = $f->getDataResultContents();

@@ -67,7 +67,12 @@ final class ResponseFactory
         return static::$_DATARESULTS;
     }
 
-    public static function response(array $config, Requestionable $request, ?Response $response, Closure $callback): DataResponse
+    public static function response(
+        array $config,
+        Requestionable $request,
+        ?Response $response,
+        Closure $callback
+    ): DataResponse
     {
         $self = new self($config, $request, $response);
         return $self->set_data_object($callback);
