@@ -15,11 +15,8 @@ class JetRequestServiceProvider extends ServiceProvider
             __DIR__.'/../config/jet-request.php', 'jet-request'
         );
 
-        $this->app->bind('client-request-factory', function() {
-            return new ClientRequestFactory();
-        });
-
         $this->default_api_tokens();
+        $this->register_bind();
     }
     
     public function boot(): void
@@ -34,6 +31,13 @@ class JetRequestServiceProvider extends ServiceProvider
         $this->app->scoped(Keyable::class, function(Application $app) {
             $service = $app->config['jet-request.token_service'];
             return new $service();
+        });
+    }
+
+    protected function register_bind(): void
+    {
+        $this->app->bind('client-request-factory', function() {
+            return new ClientRequestFactory();
         });
     }
 }

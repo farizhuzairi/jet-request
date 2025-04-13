@@ -11,7 +11,7 @@ return [
 
     'token' => env('AUTH_TOKEN', null),
 
-    'token_service' => env("TOKEN_SERVICE", null),
+    'token_service' => env("TOKEN_SERVICE", \Jet\Request\Client\Http\Factory\Token::class),
 
     'data_wrapper' => 'data_meta',
 

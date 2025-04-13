@@ -6,8 +6,7 @@ use Closure;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Jet\Request\Client\Supports\Hostable;
-use Illuminate\Http\Client\PendingRequest;
-use Jet\Request\Client\Contracts\DataResponse;
+use Jet\Request\Client\Contracts\Keyable;
 use Jet\Request\Client\Contracts\Requestionable;
 use Jet\Request\Client\Supports\InvalidResponse;
 use Jet\Request\Client\Http\Factory\Response\ResponseFactory;
@@ -16,17 +15,26 @@ class RequestService implements Requestionable
 {
     use Hostable;
 
-    protected array $data = [];
-    protected string $method;
+    /** @var array */
+    protected $data = [];
+
+    /** @var string */
+    protected $method;
+
+    /** @var string */
     protected string $accept;
 
-    private PendingRequest|Response $response;
-    private array $dataContents = [];
+    /** @var \Illuminate\Http\Client\PendingRequest|\Illuminate\Http\Client\Response */
+    private $response;
+
+    /** @var array */
+    private $dataContents = [];
 
     public const _METHOD = "post";
     public const _ACCEPT = "application/json";
 
-    private DataResponse $dataResponse;
+    /** @var \Jet\Request\Client\Contracts\DataResponse */
+    private $dataResponse;
     
     public function __construct(
         array $data = [],
@@ -35,7 +43,7 @@ class RequestService implements Requestionable
     )
     {
         $this->has_properties($data, $method, $accept);
-        $this->has_default_headers();
+        $this->has_default_headers(app(Keyable::class));
         $this->has_default_hostable();
 
         if(empty($this->method)) $this->method = static::_METHOD;

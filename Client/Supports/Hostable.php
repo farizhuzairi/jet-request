@@ -2,6 +2,7 @@
 
 namespace Jet\Request\Client\Supports;
 
+use Jet\Request\Client\Contracts\Keyable;
 use Illuminate\Http\Client\RequestException;
 
 trait Hostable
@@ -103,15 +104,14 @@ trait Hostable
         return null;
     }
 
-    protected function has_default_headers(): static
+    protected function has_default_headers(Keyable $keyable, array $default = []): static
     {
-        $default = [
-            'X-App-ID' => null,
-            'X-Request-ID' => null,
-            'X-Trace-ID' => null,
-        ];
+        if (method_exists($keyable, 'getToken')) {
+            $token = $keyable->getToken();
+            if (! empty($token)) $default = array_merge($default, ['Authorization' => "Bearer {$token}"]);
+        }
 
-        $this->headers = array_merge($this->headers, $default);
+        $this->headers = $default;
         return $this;
     }
 
