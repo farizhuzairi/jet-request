@@ -21,7 +21,6 @@
     ],
     "require": {
         "php": "^8.2",
-        "hascamp/basecrypt": "^1.1.5",
         "spatie/laravel-data": "^4.13"
 
     },
