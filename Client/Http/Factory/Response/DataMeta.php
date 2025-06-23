@@ -12,7 +12,5 @@ class DataMeta extends DataResponse
         public ?array $author = [],
         public array $meta = [],
     )
-    {
-        // if(is_array($data)) parent::__construct(...$data);
-    }
+    {}
 }
